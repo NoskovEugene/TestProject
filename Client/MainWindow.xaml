@@ -9,6 +9,7 @@
         xmlns:converters="clr-namespace:Client.Converters"
         mc:Ignorable="d"
         Language="ru"
+        Loaded="Window_Loaded"
         Title="{Binding Title}" Height="450" Width="1074">
     <Window.DataContext>
         <viewModels:MainViewModel/>
@@ -17,17 +18,30 @@
     </Window.Resources>
     <DockPanel LastChildFill="True">
         <StatusBar DockPanel.Dock="Bottom">
-            <StatusBarItem HorizontalAlignment="Right"/>
+            <StatusBarItem>
+                <StackPanel Orientation="Horizontal">
+                    <Label>Идентификатор текущей корзины</Label>
+                    <Label Content="{Binding CurrentCartId}"/>
+                </StackPanel>
+            </StatusBarItem>
         </StatusBar>
         <Grid DockPanel.Dock="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50*"/>
                 <ColumnDefinition Width="70*"/>
             </Grid.ColumnDefinitions>
-            
 
-
-            <DataGrid Grid.Column="0"
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="100*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <DataGrid Grid.Column="0"
+                          Grid.ColumnSpan="3"
                       Background="WhiteSmoke"
                       ItemsSource="{Binding Path=CartItems}"
                       AutoGenerateColumns="False"
@@ -35,36 +49,42 @@
                       CanUserDeleteRows="True"
                       x:Name="CartItems">
 
-                <i:Interaction.Triggers>
-                    <!--<i:EventTrigger EventName="CellEditEnding">
+                    <i:Interaction.Triggers>
+                        <!--<i:EventTrigger EventName="CellEditEnding">
                         <prism:InvokeCommandAction Command="{Binding OnQuantityChangedCommand}" CommandParameter="{Binding ElementName=CartItems, Path=SelectedItem}"/>
                     </i:EventTrigger>-->
-                </i:Interaction.Triggers>
-                <DataGrid.InputBindings>
-                    <KeyBinding Command="{Binding OnCartItemRemoveCommand}"
+                    </i:Interaction.Triggers>
+                    <DataGrid.InputBindings>
+                        <KeyBinding Command="{Binding OnCartItemRemoveCommand}"
                                 CommandParameter="{Binding ElementName=CartItems, Path=SelectedItem}"
                                 Key="Delete">
-                    </KeyBinding>
-                </DataGrid.InputBindings>
-                
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Название товара" Binding="{Binding ProductDto.Name}" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Цена" Binding="{Binding ProductDto.Price, StringFormat=C2 }" IsReadOnly="True"/>
-                    <DataGridTextColumn Header="Введённая скидка" Binding="{Binding EnteredDiscount}" IsReadOnly="True"/>
-                </DataGrid.Columns>
-            </DataGrid>
-            
-            
+                        </KeyBinding>
+                    </DataGrid.InputBindings>
+
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Название товара" Binding="{Binding ProductDto.Name}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Цена" Binding="{Binding ProductDto.Price, StringFormat=C2 }" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Введённая скидка" Binding="{Binding EnteredDiscount}" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Button Grid.Row="1" Grid.Column="0" Height="30" Grid.ColumnSpan="2">
+                    Покупка
+                </Button>
+            </Grid>
+
             <DataGrid Grid.Column="1"
+                      IsEnabled="{Binding ProductWorker.IsBusy, Converter={converters:InversionBoolConverter}}"
                       x:Name="Products"
                       AutoGenerateColumns="False"
                       ItemsSource="{Binding Products}"
                       Background="WhiteSmoke"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
-                      IsReadOnly="True"
                       SelectionChanged="Products_SelectionChanged"
-                      SelectionMode="Single">
+                      SelectionMode="Single"
+                      Effect="{Binding ProductWorker.IsBusy, Converter={converters:BoolToEffectConverter}}"
+                      >
 
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="SelectionChanged">

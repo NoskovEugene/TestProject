@@ -5,7 +5,7 @@ namespace Client.Web.Repositories
 {
     public interface ITestingRepository
     {
-        Task<bool> TestConnectionToServer();
+        bool TestConnectionToServer();
     }
 
     public class TestingRepository : RepositoryBase, ITestingRepository
@@ -14,18 +14,9 @@ namespace Client.Web.Repositories
         {
         }
 
-        public async Task<bool> TestConnectionToServer()
+        public bool TestConnectionToServer()
         {
-            try
-            {
-                return await Client.SendRequestAsync<bool>(
-                    "/api/v1/product/getAllProducts", HttpMethod.Post).ConfigureAwait(false);
-            }
-            catch
-            {
-                return false;
-            }
-
+            return Client.TestConnection("/api/v1/ping");
         }
     }
 }

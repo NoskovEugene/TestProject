@@ -36,6 +36,7 @@ namespace Client
             containerRegistry.Register<IWebClient, WebClient>();
             containerRegistry.Register<IProductRepository, ProductRepository>();
             containerRegistry.Register<ITestingRepository, TestingRepository>();
+            containerRegistry.Register<ICartRepository, CartRepository>();
             containerRegistry.AddAutoMapper(x =>
             {
                 x.AddProfile<AutoMapperProfile>();

@@ -26,7 +26,6 @@ namespace Server.Controllers
         {
             return ProductRepository.Query(x => x.Id != 0).ToList();
         }
-
         
         [ActionName("addNewProduct")]
         [HttpPost]

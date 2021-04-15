@@ -35,7 +35,9 @@ namespace Server
             services.AddControllers();
             services.AddDbContext<ServerDbContext>(x =>
             {
-                x.UseSqlite(connection).UseLazyLoadingProxies();
+                x.UseSqlite(connection)
+                 .UseLazyLoadingProxies()
+                 .EnableSensitiveDataLogging();
             });
             RegisterRepositories(services);
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "Server", Version = "v1"}); });

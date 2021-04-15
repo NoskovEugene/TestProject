@@ -8,6 +8,8 @@ namespace Client.Web
     {
         Task<T> SendRequestAsync<T>(string url, HttpMethod? method, bool isRelative = true);
 
+        bool TestConnection(string url, bool isRelative = true);
+
         T SendRequest<T>(string url, HttpMethod? method, bool isRelative = true);
     }
 }

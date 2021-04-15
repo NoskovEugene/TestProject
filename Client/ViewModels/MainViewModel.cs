@@ -1,20 +1,14 @@
-﻿using Prism.Mvvm;
-using Common.Dtos;
+﻿using Common.Dtos;
 using System.Collections.ObjectModel;
 using Client.Configuration;
 using Prism.Commands;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using Client.InternalModels;
-using System;
 using Client.Extensions;
 using System.Windows;
-using Client.Web;
-using Common.RequestModels;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Client.Web.Repositories;
+using System.Threading.Tasks;
+using System.ComponentModel;
+using Client.BackgoundWorkers;
 
 namespace Client.ViewModels
 {
@@ -25,11 +19,19 @@ namespace Client.ViewModels
         private ObservableCollection<ProductDto> products;
         private ObservableCollection<ObservableCartItem> cartItems;
         private string title;
+        private int currentCartId;
+        
 
         public string Title
         {
             get => title;
             set => SetProperty(ref title, value);
+        }
+
+        public int CurrentCartId
+        {
+            get => currentCartId;
+            set => SetProperty(ref currentCartId, value);
         }
 
         public ObservableCollection<ProductDto> Products
@@ -48,30 +50,45 @@ namespace Client.ViewModels
         public DelegateCommand<object> OnCartItemRemoveCommand =>
             new DelegateCommand<object>(data => OnCartItemRemove(data));
 
+        public BackgroundWorkerBase ProductWorker { get; set; }
+
         #endregion
 
         #region Dependency
 
         public IAppConfig AppConfig { get; set; }
 
-        public ITestingRepository TestingRepository { get; set; }
+        public IProductRepository ProductRepository { get; }
 
-        public IProductRepository ProductRepository { get; set; }
+        public ITestingRepository TestingRepository { get; }
+
+        public ICartRepository CartRepository { get; }
 
         #endregion
+
+        public ProductCartDto CurrentCart { get; set; }
 
         public MainViewModel() { }
 
 
-        public MainViewModel(IAppConfig appConfig, IProductRepository productRepository, ITestingRepository testingRepository)
+        public MainViewModel(IAppConfig appConfig, IProductRepository productRepository, ITestingRepository testingRepository, ICartRepository cartRepository)
         {
             AppConfig = appConfig;
-            TestingRepository = testingRepository;
             ProductRepository = productRepository;
+            TestingRepository = testingRepository;
+            CartRepository = cartRepository;
             title = "Клиент";
             cartItems = new();
             products = new();
+            InitializeWorkers();
         }
+
+        private void InitializeWorkers()
+        {
+            ProductWorker = new BackgroundWorkerBase(ProductWorker_DoWork, ProductWorker_OnComplete);
+        }
+
+
 
         private void OnProductSelected(object data)
         {
@@ -112,6 +129,29 @@ namespace Client.ViewModels
                 var item = (ObservableCartItem)data;
                 cartItems.Remove(item);
             }
+        }
+
+        private void ProductWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var response = ProductRepository.GetProducts().Result;
+            foreach (var item in response)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    products.Add(item);
+                });
+            }
+            CurrentCartId = CartRepository.InitCart().Result;
+        }
+
+        private void ProductWorker_OnComplete(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+        }
+
+        public void OnLoaded()
+        {
+            ProductWorker.RunWorker();
         }
     }
 }

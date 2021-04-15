@@ -5,6 +5,8 @@ using Client.Configuration;
 using System.IO;
 using Flurl;
 using Common.RequestModels;
+using System;
+using System.Net;
 
 namespace Client.Web
 {
@@ -39,6 +41,23 @@ namespace Client.Web
             return obj;
         }
 
+        public bool TestConnection(string url, bool isRelative = true)
+        {
+            url = isRelative ? Url.Combine(AppConfig.NetworkConfig.ServerUrl, url) : url;
+            var request = WebRequest.Create(url);
+            request.Timeout = 700;
+            try
+            {
+                var response = (HttpWebResponse)request.GetResponse();
+                response.Close();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private HttpRequestMessage CreateMessage(string url, HttpMethod? method, bool isRelative = true)
         {
             method ??= HttpMethod.Post;
@@ -46,7 +65,8 @@ namespace Client.Web
             var config = new HttpRequestMessage(method, url);
             return config;
         }
-
+        
+        
         private async Task<T> DeserializeObject<T>(HttpResponseMessage message)
         {
             var jsonText = await message.Content.ReadAsStringAsync();
