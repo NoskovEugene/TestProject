@@ -1,0 +1,61 @@
+﻿<Window x:Class="Client.EnterDiscountModal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:viewModels="clr-namespace:Client.ViewModels" xmlns:converters="clr-namespace:Client.Converters" xmlns:i="http://schemas.microsoft.com/xaml/behaviors" xmlns:prism="http://prismlibrary.com/"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterOwner"
+        Closing="Window_Closing"
+        SizeToContent="Height"
+        Title="Ввод скидки" Width="509">
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="FlatStyle">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin" Value="5 0 5 0"/>
+            <Setter Property="Height" Value="25"/>
+        </Style>
+    </Window.Resources>
+    <Window.DataContext>
+        <viewModels:EnterDiscountModalViewModel/>
+    </Window.DataContext>
+    <StackPanel Orientation="Vertical">
+        <TextBox x:Name="EnterPriceBox" Margin="5 5 5 10" FontSize="15">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="TextChanged">
+                    <prism:InvokeCommandAction Command="{Binding OnTextChangedCommand}" CommandParameter="{Binding ElementName=EnterPriceBox, Path=Text}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </TextBox>
+        <TextBlock Margin="5 5 5 10" 
+                   FontSize="13"
+                   Background="#fab1a0" 
+                   TextAlignment="Center"
+                   Visibility="{Binding ErrorVisibility}"
+                   Text="{Binding Errors, Mode=OneWay, Converter={converters:ListStringToStringConverter}}"/>
+        <Grid Margin="0 0 0 10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*"/>
+                <ColumnDefinition Width="50*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Button Style="{StaticResource FlatStyle}"
+                    Background="#78e08f"
+                    Command="{Binding OnAcceptClickCommand}"
+                    >
+                
+                Ввод
+            </Button>
+            <Button Grid.Column="1"
+                    Style="{StaticResource FlatStyle}"
+                    Background="#e55039"
+                    Command="{Binding OnCancelClickCommand}">
+                Отмена
+            </Button>
+
+        </Grid>
+    </StackPanel>
+</Window>
+
+

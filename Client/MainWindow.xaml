@@ -1,0 +1,83 @@
+﻿<Window x:Class="Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:prism="http://prismlibrary.com/"
+        xmlns:viewModels="clr-namespace:Client.ViewModels"
+        xmlns:converters="clr-namespace:Client.Converters"
+        mc:Ignorable="d"
+        Language="ru"
+        Title="{Binding Title}" Height="450" Width="1074">
+    <Window.DataContext>
+        <viewModels:MainViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+    </Window.Resources>
+    <DockPanel LastChildFill="True">
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem HorizontalAlignment="Right"/>
+        </StatusBar>
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*"/>
+                <ColumnDefinition Width="70*"/>
+            </Grid.ColumnDefinitions>
+            
+
+
+            <DataGrid Grid.Column="0"
+                      Background="WhiteSmoke"
+                      ItemsSource="{Binding Path=CartItems}"
+                      AutoGenerateColumns="False"
+                      CanUserAddRows="False" 
+                      CanUserDeleteRows="True"
+                      x:Name="CartItems">
+
+                <i:Interaction.Triggers>
+                    <!--<i:EventTrigger EventName="CellEditEnding">
+                        <prism:InvokeCommandAction Command="{Binding OnQuantityChangedCommand}" CommandParameter="{Binding ElementName=CartItems, Path=SelectedItem}"/>
+                    </i:EventTrigger>-->
+                </i:Interaction.Triggers>
+                <DataGrid.InputBindings>
+                    <KeyBinding Command="{Binding OnCartItemRemoveCommand}"
+                                CommandParameter="{Binding ElementName=CartItems, Path=SelectedItem}"
+                                Key="Delete">
+                    </KeyBinding>
+                </DataGrid.InputBindings>
+                
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Название товара" Binding="{Binding ProductDto.Name}" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Цена" Binding="{Binding ProductDto.Price, StringFormat=C2 }" IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Введённая скидка" Binding="{Binding EnteredDiscount}" IsReadOnly="True"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            
+            
+            <DataGrid Grid.Column="1"
+                      x:Name="Products"
+                      AutoGenerateColumns="False"
+                      ItemsSource="{Binding Products}"
+                      Background="WhiteSmoke"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      SelectionChanged="Products_SelectionChanged"
+                      SelectionMode="Single">
+
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="SelectionChanged">
+                        <prism:InvokeCommandAction Command="{Binding OnProductSelectedCommand}" CommandParameter="{Binding ElementName=Products, Path=SelectedItem}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Идентификатор" Binding="{Binding Id}"/>
+                    <DataGridTextColumn Header="Название товара" Binding="{Binding Name}"/>
+                    <DataGridTextColumn Header="Цена" Binding="{Binding Price, StringFormat=C3}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+    </DockPanel>
+
+</Window>
