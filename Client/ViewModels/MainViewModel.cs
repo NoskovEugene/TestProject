@@ -181,6 +181,11 @@ namespace Client.ViewModels
             });
         }
 
+        private async void OnBuyClick()
+        {
+
+        }
+
         private void ProductWorker_OnComplete(object sender, RunWorkerCompletedEventArgs e)
         {
 
