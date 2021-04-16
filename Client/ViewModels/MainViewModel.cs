@@ -9,6 +9,9 @@ using Client.Web.Repositories;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using Client.BackgoundWorkers;
+using AutoMapper;
+using Client.Web;
+using System.Net.Http;
 
 namespace Client.ViewModels
 {
@@ -64,6 +67,8 @@ namespace Client.ViewModels
 
         public ICartRepository CartRepository { get; }
 
+        public IMapper Mapper { get; set; }
+
         #endregion
 
         public ProductCartDto CurrentCart { get; set; }
@@ -71,8 +76,10 @@ namespace Client.ViewModels
         public MainViewModel() { }
 
 
-        public MainViewModel(IAppConfig appConfig, IProductRepository productRepository, ITestingRepository testingRepository, ICartRepository cartRepository)
+        public MainViewModel(IAppConfig appConfig, IProductRepository productRepository, ITestingRepository testingRepository, ICartRepository cartRepository, IMapper mapper)
         {
+
+
             AppConfig = appConfig;
             ProductRepository = productRepository;
             TestingRepository = testingRepository;
@@ -141,7 +148,8 @@ namespace Client.ViewModels
                     products.Add(item);
                 });
             }
-            CurrentCartId = CartRepository.InitCart().Result;
+            CurrentCart = CartRepository.InitCart().Result;
+            CurrentCartId = CurrentCart.Id;
         }
 
         private void ProductWorker_OnComplete(object sender, RunWorkerCompletedEventArgs e)

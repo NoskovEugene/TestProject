@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Client.Configuration;
+using Common.Dtos;
+using Common.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -9,13 +12,17 @@ namespace Client.Web.Repositories
 {
     public class CartRepository : RepositoryBase, ICartRepository
     {
-        public CartRepository(IWebClient client) : base(client)
+        public CartRepository(IWebClient client, IAppConfig appConfig) : base(client, appConfig)
         {
         }
 
-        public async Task<int> InitCart()
+        public async Task<ProductCartDto> InitCart()
         {
-            return await Client.SendRequestAsync<int>("/api/v1/cart/initCart", HttpMethod.Get).ConfigureAwait(false);
+            var config = new RequestBuilder().Url("/api/v1/cart/initCart")
+                .IsRelative(Network.ServerUrl)
+                .Method(HttpMethod.Get)
+                .Build();
+            return await Client.SendRequestAsync<ProductCartDto>(config).ConfigureAwait(false);
         }
     }
 }

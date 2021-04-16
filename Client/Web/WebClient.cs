@@ -24,18 +24,15 @@ namespace Client.Web
             AppConfig = appConfig;
         }
 
-
-        public async Task<T> SendRequestAsync<T>(string url, HttpMethod? method, bool isRelative = true)
+        public async Task<T> SendRequestAsync<T>(HttpRequestMessage config)
         {
-            var config = CreateMessage(url, method, isRelative);
             var response = await Client.SendAsync(config).ConfigureAwait(false);
             var obj = await DeserializeObject<T>(response);
             return obj;
         }
 
-        public T SendRequest<T>(string url, HttpMethod? method, bool isRelative = true)
+        public T SendRequest<T>(HttpRequestMessage config)
         {
-            var config = CreateMessage(url, method, isRelative);
             var response = Client.Send(config);
             var obj = DeserializeObject<T>(response).Result;
             return obj;
@@ -58,15 +55,6 @@ namespace Client.Web
             }
         }
 
-        private HttpRequestMessage CreateMessage(string url, HttpMethod? method, bool isRelative = true)
-        {
-            method ??= HttpMethod.Post;
-            url = isRelative ? Url.Combine(AppConfig.NetworkConfig.ServerUrl, url) : url;
-            var config = new HttpRequestMessage(method, url);
-            return config;
-        }
-        
-        
         private async Task<T> DeserializeObject<T>(HttpResponseMessage message)
         {
             var jsonText = await message.Content.ReadAsStringAsync();

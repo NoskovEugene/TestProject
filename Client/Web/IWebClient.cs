@@ -6,10 +6,10 @@ namespace Client.Web
 {
     public interface IWebClient
     {
-        Task<T> SendRequestAsync<T>(string url, HttpMethod? method, bool isRelative = true);
+        Task<T> SendRequestAsync<T>(HttpRequestMessage config);
 
         bool TestConnection(string url, bool isRelative = true);
 
-        T SendRequest<T>(string url, HttpMethod? method, bool isRelative = true);
+        T SendRequest<T>(HttpRequestMessage config);
     }
 }

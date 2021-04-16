@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using Client.Configuration;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Client.Web.Repositories
@@ -10,7 +11,7 @@ namespace Client.Web.Repositories
 
     public class TestingRepository : RepositoryBase, ITestingRepository
     {
-        public TestingRepository(IWebClient client) : base(client)
+        public TestingRepository(IWebClient client, IAppConfig appConfig) : base(client, appConfig)
         {
         }
 

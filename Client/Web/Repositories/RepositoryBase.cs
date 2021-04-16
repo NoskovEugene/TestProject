@@ -1,12 +1,17 @@
-﻿namespace Client.Web.Repositories
+﻿using Client.Configuration;
+
+namespace Client.Web.Repositories
 {
     public class RepositoryBase
     {
         public IWebClient Client { get; }
-        
-        public RepositoryBase(IWebClient client)
+
+        public NetworkConfiguration Network { get; }
+
+        public RepositoryBase(IWebClient client, IAppConfig appConfig)
         {
-            this.Client = client;
+            Client = client;
+            Network = appConfig.NetworkConfig;
         }
     }
 }

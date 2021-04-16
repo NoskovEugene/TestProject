@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Common.Mapper;
 using Common.Models;
 using Common.RequestModels;
 using Microsoft.AspNetCore.Builder;
@@ -33,6 +34,10 @@ namespace Server
         {
             var connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddControllers();
+            services.AddAutoMapper(x =>
+            {
+                x.AddProfile<AutoMapperProfile>();
+            });
             services.AddDbContext<ServerDbContext>(x =>
             {
                 x.UseSqlite(connection)
