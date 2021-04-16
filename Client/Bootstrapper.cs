@@ -9,6 +9,7 @@ using Client.Converters.Base;
 using Client.Web;
 using Common.Mapper;
 using Client.Web.Repositories;
+using Client.InternalModels;
 
 namespace Client
 {
@@ -40,6 +41,7 @@ namespace Client
             containerRegistry.AddAutoMapper(x =>
             {
                 x.AddProfile<AutoMapperProfile>();
+                x.AddProfile<InternamMapperProfile>();
             });
             ResolverBase.Resolve = Container.Resolve;
             ResolverBase.NamedResolve = Container.Resolve;

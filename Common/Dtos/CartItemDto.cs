@@ -8,8 +8,10 @@ namespace Common.Dtos
 {
     public class CartItemDto : EntityBaseDto
     {
-        public ProductDto ProductDto { get; set; }
+        public ProductDto Product { get; set; }
 
         public double EnteredDiscount { get; set; }
+        
+        public double FinalPrice { get; set; }
     }
 }

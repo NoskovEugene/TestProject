@@ -6,7 +6,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:prism="http://prismlibrary.com/"
         xmlns:viewModels="clr-namespace:Client.ViewModels"
-        xmlns:converters="clr-namespace:Client.Converters"
+        xmlns:converters="clr-namespace:Client.Converters" xmlns:notifications="clr-namespace:Notifications.Wpf.Core.Controls;assembly=Notifications.Wpf.Core"
         mc:Ignorable="d"
         Language="ru"
         Loaded="Window_Loaded"
@@ -26,12 +26,13 @@
             </StatusBarItem>
         </StatusBar>
         <Grid DockPanel.Dock="Top">
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50*"/>
                 <ColumnDefinition Width="70*"/>
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0">
+            <Grid Grid.Column="0" Background="WhiteSmoke">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="100*"/>
                     <RowDefinition Height="auto"/>
@@ -62,15 +63,24 @@
                     </DataGrid.InputBindings>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Название товара" Binding="{Binding ProductDto.Name}" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Цена" Binding="{Binding ProductDto.Price, StringFormat=C2 }" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Название товара" Binding="{Binding Product.Name}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Цена" Binding="{Binding Product.Price, StringFormat=C2 }" IsReadOnly="True"/>
                         <DataGridTextColumn Header="Введённая скидка" Binding="{Binding EnteredDiscount}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Конечная цена" Binding="{Binding FinalPrice, StringFormat=C2}" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <Button Grid.Row="1" Grid.Column="0" Height="30" Grid.ColumnSpan="2">
+                <Button Grid.Row="1" Grid.Column="0" Height="30">
                     Покупка
                 </Button>
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Background="Transparent" 
+                           TextAlignment="Left"
+                           VerticalAlignment="Center" 
+                           Margin="10 0 0 0"
+                           Text="{Binding FinalPrice, Converter={converters:FinalPriceConverter}, StringFormat=C2}">
+                </TextBlock>
             </Grid>
 
             <DataGrid Grid.Column="1"

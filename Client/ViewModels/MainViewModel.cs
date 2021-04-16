@@ -12,6 +12,10 @@ using Client.BackgoundWorkers;
 using AutoMapper;
 using Client.Web;
 using System.Net.Http;
+using Common.Models;
+using Notifications.Wpf.Core;
+using Notifications.Wpf.Core.Controls;
+using System;
 
 namespace Client.ViewModels
 {
@@ -23,7 +27,7 @@ namespace Client.ViewModels
         private ObservableCollection<ObservableCartItem> cartItems;
         private string title;
         private int currentCartId;
-        
+        private double finalPrice;
 
         public string Title
         {
@@ -37,6 +41,12 @@ namespace Client.ViewModels
             set => SetProperty(ref currentCartId, value);
         }
 
+        public double FinalPrice
+        {
+            get => finalPrice;
+            set => SetProperty(ref finalPrice, value);
+        }
+
         public ObservableCollection<ProductDto> Products
         {
             get => products;
@@ -48,7 +58,7 @@ namespace Client.ViewModels
         }
 
         public DelegateCommand<object> OnProductSelectedCommand =>
-            new DelegateCommand<object>(data => OnProductSelected(data));
+            new DelegateCommand<object>(async(data) => await OnProductSelected(data));
 
         public DelegateCommand<object> OnCartItemRemoveCommand =>
             new DelegateCommand<object>(data => OnCartItemRemove(data));
@@ -69,6 +79,8 @@ namespace Client.ViewModels
 
         public IMapper Mapper { get; set; }
 
+        public NotificationManager NotificationManager { get; }
+
         #endregion
 
         public ProductCartDto CurrentCart { get; set; }
@@ -78,16 +90,18 @@ namespace Client.ViewModels
 
         public MainViewModel(IAppConfig appConfig, IProductRepository productRepository, ITestingRepository testingRepository, ICartRepository cartRepository, IMapper mapper)
         {
-
-
+            Mapper = mapper;
             AppConfig = appConfig;
             ProductRepository = productRepository;
             TestingRepository = testingRepository;
             CartRepository = cartRepository;
+
             title = "Клиент";
             cartItems = new();
             products = new();
             InitializeWorkers();
+
+            NotificationManager = new NotificationManager(NotificationPosition.BottomRight, App.Current.Dispatcher);
         }
 
         private void InitializeWorkers()
@@ -97,7 +111,7 @@ namespace Client.ViewModels
 
 
 
-        private void OnProductSelected(object data)
+        private async Task OnProductSelected(object data)
         {
             if (data is ProductDto)
             {
@@ -105,13 +119,16 @@ namespace Client.ViewModels
 
                 if (RequestPrice(product, out var discount))
                 {
-                    var cartItem = new ObservableCartItem()
+                    var cartItem = await CartRepository.AddProduct(product.Id, currentCartId, discount);
+                    var observableItem = Mapper.Map<CartItemDto, ObservableCartItem>(cartItem.Payload);
+                    cartItems.Add(observableItem);
+                    FinalPrice += cartItem.Payload.FinalPrice;
+                    await NotificationManager.ShowAsync(new NotificationContent
                     {
-                        Id = -1,
-                        ProductDto = product,
-                        EnteredDiscount = discount
-                    };
-                    cartItems.Add(cartItem);
+                        Title = "",
+                        Message = "Товар успешно добавлен",
+                        Type = NotificationType.Success
+                    }, expirationTime: TimeSpan.FromSeconds(2));
                 }
             }
         }
@@ -129,16 +146,23 @@ namespace Client.ViewModels
             return value;
         }
 
-        private void OnCartItemRemove(object data)
+        private async Task OnCartItemRemove(object data)
         {
             if (data is ObservableCartItem)
             {
                 var item = (ObservableCartItem)data;
+                var result = await CartRepository.RemoveCartItem(CurrentCartId, item.Id);
+                FinalPrice = result.Payload.TotalSumWithDiscount;
                 cartItems.Remove(item);
+                await NotificationManager.ShowAsync(new NotificationContent()
+                {
+                    Message = "Товар успешно удалён",
+                    Type = NotificationType.Success
+                }, expirationTime: TimeSpan.FromSeconds(2));
             }
         }
 
-        private void ProductWorker_DoWork(object sender, DoWorkEventArgs e)
+        private async void ProductWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var response = ProductRepository.GetProducts().Result;
             foreach (var item in response)
@@ -150,6 +174,11 @@ namespace Client.ViewModels
             }
             CurrentCart = CartRepository.InitCart().Result;
             CurrentCartId = CurrentCart.Id;
+            await NotificationManager.ShowAsync(new NotificationContent()
+            {
+                Message = "Данные успешно загружены",
+                Type = NotificationType.Success
+            });
         }
 
         private void ProductWorker_OnComplete(object sender, RunWorkerCompletedEventArgs e)

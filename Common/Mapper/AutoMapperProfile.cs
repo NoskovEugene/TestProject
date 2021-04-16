@@ -14,8 +14,12 @@ namespace Common.Mapper
         public AutoMapperProfile()
         {
             CreateMap<Product, ProductDto>();
-            CreateMap<ProductCart, ProductCartDto>();
+            CreateMap<ProductDto, Product>();
+            CreateMap<ProductCart, ProductCartDto>()
+                .ForMember(x=> x.CartItems, opt=> opt.MapFrom(src=> src.CartItems));
+            CreateMap<ProductCartDto, ProductCart>();
             CreateMap<CartItem, CartItemDto>();
+            CreateMap<CartItemDto, CartItem>();
         }
     }
 }

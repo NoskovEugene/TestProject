@@ -12,10 +12,10 @@ namespace Client.InternalModels
     {
         public int Id { get; set; }
 
-        public ProductDto ProductDto { get; set; }
+        public ProductDto Product { get; set; }
 
         public double EnteredDiscount { get; set; }
 
-        public double FinalPrice = 0;
+        public double FinalPrice { get; set; }
     }
 }
