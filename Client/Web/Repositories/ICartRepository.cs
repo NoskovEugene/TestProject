@@ -12,5 +12,9 @@ namespace Client.Web.Repositories
         Task<SuccessResponse<CartItemDto>> AddProduct(int productId, int cartId, double enteredDiscount);
 
         Task<SuccessResponse<ProductCartDto>> RemoveCartItem(int cartId, int cartItemId);
+
+        Task<SuccessResponse<ProductCartDto>> GetCart(int cartId);
+
+        Task GetReceipt(int cartId, string pathToFile);
     }
 }

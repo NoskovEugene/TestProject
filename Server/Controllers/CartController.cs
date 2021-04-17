@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AutoMapper;
 using Common.Dtos;
 using Common.Models;
 using Common.RequestModels;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Server.DAL.Repositories;
@@ -113,14 +116,22 @@ namespace Server.Controllers
                 Success = false 
             };
         }
-        
-        
+
+        [ActionName("getReceipt")]
+        [HttpGet]
+        public IActionResult GetReceipt([FromQuery]int cartId)
+        {
+            var cart = CartRepository.Query(x => x.Id == cartId).First();
+            var pathToCart = CreateReceipt(Mapper.Map<ProductCartDto>(cart));
+            var bytes = System.IO.File.ReadAllBytes(pathToCart);
+            return File(bytes, "application/text");
+        }
         
         [ActionName("getCart")]
         [HttpPost]
-        public SuccessResponse<ProductCartDto> GetCart([FromQuery] int id)
+        public SuccessResponse<ProductCartDto> GetCart([FromQuery] int cartId)
         {
-            var query = CartRepository.Query(x => x.Id == id)
+            var query = CartRepository.Query(x => x.Id == cartId)
                                       .Include(x => x.CartItems)
                                       .ThenInclude(x=> x.Product)
                                       .FirstOrDefault();
@@ -141,5 +152,35 @@ namespace Server.Controllers
                 };
             }
         }
+
+        private string CreateReceipt(ProductCartDto cart)
+        {
+            var storage = Path.Combine(Directory.GetCurrentDirectory(), "storage");
+            if (!Directory.Exists(storage))
+            {
+                Directory.CreateDirectory(storage);
+            }
+            var receiptFile = Path.Combine(storage, $"receipt{cart.Id}.txt");
+            if (System.IO.File.Exists(receiptFile))
+            {
+                System.IO.File.Delete(receiptFile);
+            }
+            var stream = new FileStream(receiptFile, FileMode.Create, FileAccess.ReadWrite);
+            using var writer = new StreamWriter(stream);
+            writer.WriteLine($"{new string(' ', 50)}Чек №{cart.Id}");
+            writer.WriteLine(new string('-', 110));
+            writer.WriteLine(string.Format("{0,-30} {1,-30} {2,-20:P1} {3,-30}", "Название продукта", "Цена продукта без скидки", "Скидка", "Цена продукта со скидкой"));
+            writer.WriteLine(new string('-', 110));
+            foreach (var cartItem in cart.CartItems)
+            {
+                writer.WriteLine($"{cartItem.Product.Name,-30} {cartItem.Product.Price,-30:C2} {(cartItem.EnteredDiscount / 100),-20:P} {cartItem.FinalPrice,-30:C2}");
+            }
+            writer.WriteLine(new string('-', 110));
+            writer.WriteLine($"Цена чека без скидки: {cart.TotalSum:C2}");
+            writer.WriteLine($"Цена чека со скидкой: {cart.TotalSumWithDiscount:C2}");
+
+            return receiptFile;
+        }
+        
     }
 }

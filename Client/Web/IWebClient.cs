@@ -11,5 +11,7 @@ namespace Client.Web
         bool TestConnection(string url, bool isRelative = true);
 
         T SendRequest<T>(HttpRequestMessage config);
+
+        Task DownloadFile(HttpRequestMessage config, string pathToFile);
     }
 }

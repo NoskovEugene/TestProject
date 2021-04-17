@@ -38,6 +38,17 @@ namespace Client.Web
             return obj;
         }
 
+        public async Task DownloadFile(HttpRequestMessage config, string pathToFile)
+        {
+            var response = await Client.GetAsync(config.RequestUri, HttpCompletionOption.ResponseHeadersRead);
+            var stream = await response.Content.ReadAsStreamAsync();
+            using (var fileStream = new FileStream(pathToFile, FileMode.CreateNew,FileAccess.Write))
+            {
+                stream.CopyToAsync(fileStream);
+            }
+            stream.Close();
+        }
+
         public bool TestConnection(string url, bool isRelative = true)
         {
             url = isRelative ? Url.Combine(AppConfig.NetworkConfig.ServerUrl, url) : url;

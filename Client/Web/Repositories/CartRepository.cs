@@ -48,7 +48,28 @@ namespace Client.Web.Repositories
                 .Build();
 
             return await Client.SendRequestAsync<SuccessResponse<ProductCartDto>>(config).ConfigureAwait(false);
+        }
 
+        public async Task<SuccessResponse<ProductCartDto>> GetCart(int cartId)
+        {
+            var config = new RequestBuilder()
+                .Url("/api/v1/cart/getCart")
+                .IsRelative(Network.ServerUrl)
+                .Method(HttpMethod.Post)
+                .AddQueryParam(() => cartId)
+                .Build();
+            return await Client.SendRequestAsync<SuccessResponse<ProductCartDto>>(config).ConfigureAwait(false);
+        }
+
+        public async Task GetReceipt(int cartId, string pathToFile)
+        {
+            var config = new RequestBuilder()
+                .Url("/api/v1/cart/getReceipt")
+                .IsRelative(Network.ServerUrl)
+                .Method(HttpMethod.Get)
+                .AddQueryParam(() => cartId)
+                .Build();
+            await Client.DownloadFile(config, pathToFile);
         }
     }
 }

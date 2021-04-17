@@ -16,6 +16,8 @@ using Common.Models;
 using Notifications.Wpf.Core;
 using Notifications.Wpf.Core.Controls;
 using System;
+using System.IO;
+using Microsoft.Win32;
 
 namespace Client.ViewModels
 {
@@ -58,10 +60,13 @@ namespace Client.ViewModels
         }
 
         public DelegateCommand<object> OnProductSelectedCommand =>
-            new DelegateCommand<object>(async(data) => await OnProductSelected(data));
+            new DelegateCommand<object>(async (data) => await OnProductSelected(data));
 
         public DelegateCommand<object> OnCartItemRemoveCommand =>
             new DelegateCommand<object>(data => OnCartItemRemove(data));
+
+        public DelegateCommand OnBuyClickCommand =>
+            new(async () => OnBuyClick());
 
         public BackgroundWorkerBase ProductWorker { get; set; }
 
@@ -85,10 +90,13 @@ namespace Client.ViewModels
 
         public ProductCartDto CurrentCart { get; set; }
 
-        public MainViewModel() { }
+        public MainViewModel()
+        {
+        }
 
 
-        public MainViewModel(IAppConfig appConfig, IProductRepository productRepository, ITestingRepository testingRepository, ICartRepository cartRepository, IMapper mapper)
+        public MainViewModel(IAppConfig appConfig, IProductRepository productRepository,
+            ITestingRepository testingRepository, ICartRepository cartRepository, IMapper mapper)
         {
             Mapper = mapper;
             AppConfig = appConfig;
@@ -110,12 +118,11 @@ namespace Client.ViewModels
         }
 
 
-
         private async Task OnProductSelected(object data)
         {
             if (data is ProductDto)
             {
-                var product = (ProductDto)data;
+                var product = (ProductDto) data;
 
                 if (RequestPrice(product, out var discount))
                 {
@@ -150,7 +157,7 @@ namespace Client.ViewModels
         {
             if (data is ObservableCartItem)
             {
-                var item = (ObservableCartItem)data;
+                var item = (ObservableCartItem) data;
                 var result = await CartRepository.RemoveCartItem(CurrentCartId, item.Id);
                 FinalPrice = result.Payload.TotalSumWithDiscount;
                 cartItems.Remove(item);
@@ -167,11 +174,9 @@ namespace Client.ViewModels
             var response = ProductRepository.GetProducts().Result;
             foreach (var item in response)
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    products.Add(item);
-                });
+                Application.Current.Dispatcher.Invoke(() => { products.Add(item); });
             }
+
             CurrentCart = CartRepository.InitCart().Result;
             CurrentCartId = CurrentCart.Id;
             await NotificationManager.ShowAsync(new NotificationContent()
@@ -183,12 +188,32 @@ namespace Client.ViewModels
 
         private async void OnBuyClick()
         {
-
+            await Task.Run(async () =>
+            {
+                await NotificationManager.ShowAsync(new NotificationContent()
+                {
+                    Message = "Выберите путь сохранения файла",
+                    Type = NotificationType.Warning
+                });
+            });
+            var dialog = new SaveFileDialog();
+            dialog.Filter = "*.txt|*.txt";
+            if (dialog.ShowDialog() == true)
+            {
+                await CartRepository.GetReceipt(CurrentCartId, dialog.FileName).ConfigureAwait(false);
+                await Task.Run(async () =>
+                {
+                    await NotificationManager.ShowAsync(new NotificationContent()
+                    {
+                        Message = "Файл чека был успешно сохранён",
+                        Type = NotificationType.Success
+                    });
+                });
+            }
         }
 
         private void ProductWorker_OnComplete(object sender, RunWorkerCompletedEventArgs e)
         {
-
         }
 
         public void OnLoaded()
